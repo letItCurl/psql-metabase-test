@@ -1,0 +1,67 @@
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: demo_postgres
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # POSTGRES_DB is not required since we create multiple DBs via init scripts
+    command: [
+      "postgres",
+      "-c", "shared_buffers=256MB",
+      "-c", "max_connections=200",
+      "-c", "listen_addresses=*",
+      "-c", "hba_file=/etc/postgresql/pg_hba.conf"
+    ]
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: demo_metabase
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "${METABASE_PORT}:3000"
+    environment:
+      # Metabase application DB (where Metabase stores its own metadata)
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase_app
+      MB_DB_PORT: 5432
+      MB_DB_HOST: postgres
+      MB_DB_USER: ${POSTGRES_USER}
+      MB_DB_PASS: ${POSTGRES_PASSWORD}
+      # Optional quality-of-life vars
+      MB_SITE_URL: ${MB_SITE_URL}
+      MB_JETTY_HOST: 0.0.0.0
+      MB_JETTY_PORT: 3000
+
+  app:
+    image: node:20-alpine
+    container_name: demo_app
+    restart: unless-stopped
+    working_dir: /usr/src/app
+    depends_on:
+      - metabase
+    env_file: .env
+    environment:
+      PORT: 5050
+      # Optionally override via .env
+      # METABASE_SITE_URL: ${MB_SITE_URL}
+    volumes:
+      - ./:/usr/src/app:cached
+      - /usr/src/app/node_modules
+    command: sh -c "npm install --no-audit --no-fund && node server.js"
+    ports:
+      - "${APP_PORT:-5050}:5050"
+
+volumes:
+  pg_data:
