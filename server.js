@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5050;
 const METABASE_SITE_URL = process.env.METABASE_SITE_URL || 'http://localhost:3000';
 const METABASE_SECRET_KEY = '5df1abc31785e1c97d9cd5f06068f3bab4b6ca0099917954b49861826a372cdd';
 
-const METABASE_QUESTION_IDS = [39, 42]; // Array of question IDs to embed
+const METABASE_QUESTION_IDS = [39, 42, 43, 44]; // Array of question IDs to embed
 
 app.get('/', (req, res) => {
   // Generate tokens and iframe URLs for all questions

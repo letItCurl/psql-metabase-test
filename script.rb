@@ -14,8 +14,11 @@ API_KEY        = "mb_txfwmBH+mWV0YDrmyNO/Odk7V5HIw+2oDThXAJluzuk="
 DATABASE_ID    = "2"
 COLLECTION_ID  = "5"
 
-QUESTION_NAME        = "[FROM LOCAL] Orders quantity by name (SQL)"
-QUESTION_DESCRIPTION = "[FROM LOCAL]Summed amounts grouped by name (created via API)"
+# Generate random number for unique question names
+RANDOM_ID = rand(1000..9999)
+
+QUESTION_NAME        = "[FROM LOCAL] Orders quantity by name (SQL) - #{RANDOM_ID}"
+QUESTION_DESCRIPTION = "[FROM LOCAL] Summed amounts grouped by name (created via API) - #{RANDOM_ID}"
 QUESTION_DISPLAY     = "table"
 
 SQL_QUERY = <<~SQL
@@ -132,3 +135,29 @@ end
 puts "✅ Created Question ##{card_id}: #{QUESTION_NAME}"
 puts "   URL: #{question_url}"
 puts "   Collection: #{col_id.nil? ? 'Default (My personal collection)' : col_id}"
+
+# ==========
+# Publish for Embedding
+# ==========
+def publish_for_embedding(card_id)
+  payload = {
+    "enable_embedding" => true,
+    "embedding_params" => {}
+  }
+
+  request_json(method: :put, path: "/api/card/#{card_id}", body: payload)
+end
+
+# Publish the question for embedding
+begin
+  publish_result = publish_for_embedding(card_id)
+  puts "✅ Published Question ##{card_id} for embedding"
+rescue => e
+  puts "❌ Failed to publish question for embedding: #{e.message}"
+  exit 1
+end
+
+puts "\n📋 Summary:"
+puts "   Card ID: #{card_id}"
+puts "   Question: #{QUESTION_NAME}"
+puts "   Status: Published and ready for embedding"
