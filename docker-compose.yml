@@ -51,15 +51,13 @@ services:
     working_dir: /usr/src/app
     depends_on:
       - metabase
-    env_file: .env
     environment:
       PORT: 5050
-      # Optionally override via .env
-      # METABASE_SITE_URL: ${MB_SITE_URL}
+      METABASE_SITE_URL: ${MB_SITE_URL}
     volumes:
       - ./:/usr/src/app:cached
       - /usr/src/app/node_modules
-    command: sh -c "npm install --no-audit --no-fund && node server.js"
+    command: sh -c "npm install --no-audit --no-fund && npm run dev"
     ports:
       - "${APP_PORT:-5050}:5050"
 
